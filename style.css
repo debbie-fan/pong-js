@@ -1,0 +1,50 @@
+html, body {
+    margin: 0;
+}  
+
+html {
+    font-family: 'Open Sans Condensed', sans-serif;
+    height: 100%;
+}
+
+body {
+    overflow: hidden;
+    height: inherit;
+    background-color: rgb(0, 0, 0);
+}
+
+h1, p {
+    letter-spacing: 1px;
+    text-align: center;
+    margin: 0;
+    color: rgb(175, 238, 238);
+}
+
+.menu-page {
+    position: fixed; /* or absolute */
+    top: 50%;
+    left: 50%;
+    /* bring your own prefixes */
+    transform: translate(-50%, -50%);
+  }
+
+/* If screen size is 1001px or wider, set font-size for h1 and p to be bigger */
+@media screen and (min-width: 1001px) {
+    h1 {
+        font-size: 3rem;
+    }
+    p {
+        font-size: 1.5rem;
+    }
+}
+
+/* If screen size is 1000px or less, set font-size for h1 and p to be smaller */
+@media screen and (max-width: 1000px) {
+    h1 {
+        font-size: 2rem;
+    }
+    p {
+        font-size: 1rem;
+    }
+}
+
