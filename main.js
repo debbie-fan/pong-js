@@ -1,11 +1,11 @@
-//** setup canvas */ 
+/* setup canvas */ 
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
 
-//** global variables */ 
+/* global variables */ 
 let keys = [];
 
-//** objects */ 
+/* objects */ 
 class Player {
     constructor(x, y, w, h, velX, velY) {
         this.x = x;
@@ -14,6 +14,7 @@ class Player {
         this.h = h;
         this.velX = velX;
         this.velY = velY;
+        this.score = 0;
     }
 
     draw() {
@@ -41,14 +42,6 @@ class Ball {
     }
 
     update() {
-        if ((this.x + this.size) >= canvas.width) {
-            this.velX = -(this.velX);
-        }
-
-        if ((this.x - this.size) <= 0) {
-            this.velX = -(this.velX);
-        }
-
         if ((this.y + this.size) >= canvas.height) {
             this.velY = -(this.velY);
         }
@@ -62,38 +55,87 @@ class Ball {
     }
 
     collisionDetect() {
-        const dx1 = this.x - this.size;
-        const dy1 = this.y;
+        const ballX = this.x;
+        const ballRightX = this.x + this.size;
+        const ballLeftX = this.x - this.size;
+        const ballTopY = this.y - this.size;
+        const ballBotY = this.y + this.size;
 
-        const dx2 = this.x + this.size;
-        const dy2 = this.y;
+        const p1RightX = player1.x + player1.w;
+        const p1LeftX = player1.x;
+        const p1TopY = player1.y;
+        const p1BotY = player1.y + player1.h;
 
-        if (dx1 <= player1.x + player1.w && dy1 >= player1.y && dy1 <= player1.y + player1.h) {
-            this.velX = -this.velX;
-            this.x += this.velX;
-            this.y += this.velY;
-        } else if (dx2 >= player2.x && dy2 >= player2.y && dy2 <= player2.y + player2.h) {
-            this.velX = -this.velX;
-            this.x += this.velX;
-            this.y += this.velY;
+        const p2RightX = player2.x + player2.w;
+        const p2LeftX = player2.x;
+        const p2TopY = player2.y;
+        const p2BotY = player2.y + player2.h;
+
+        if (ballLeftX <= p1RightX && ballBotY <= p1BotY && ballTopY >= p1TopY && ballLeftX > p1LeftX) {
+            console.log('hit p1');
+            if (this.velX < 0) {
+                this.velX = -(this.velX);
+            }
+        } 
+        if (ballRightX >= p2LeftX && ballBotY <= p2BotY && ballTopY >= p2TopY && ballRightX < p2RightX) {
+            console.log('hit p2');
+            if (this.velX > 0) {
+                this.velX = -(this.velX);
+            }
+        } 
+        if (ballBotY >= p1TopY && ballX <= p1RightX && ballX >= p1LeftX && ballTopY < p1TopY) {
+            console.log('hit p1 top');
+            if (this.velY > 0) {
+                this.velY = -(this.velY);
+                this.velX = -(this.velX);
+            }
+        } 
+        if (ballTopY <= p1BotY && ballX <= p1RightX && ballX >= p1LeftX && ballBotY > p1BotY) {
+            console.log('hit p1 bot');
+            if (this.velY < 0) {
+                this.velY = -(this.velY);
+                this.velX = -(this.velX);
+            }
+        }
+        if (ballBotY >= p2TopY && ballX <= p2RightX && ballX >= p2LeftX && ballTopY < p2TopY) {
+            console.log('hit p2 top');
+            if (this.velY > 0) {
+                this.velY = -(this.velY);
+                this.velX = -(this.velX);
+            }
+        }
+        if (ballTopY <= p2BotY && ballX <= p2RightX && ballX >= p2LeftX && ballBotY > p2BotY) {
+            console.log('hit p2 bot');
+            if (this.velY < 0) {
+                this.velY = -(this.velY);
+                this.velX = -(this.velX);
+            }
         }
     }
 
     scoreDetect() {
-        if (this.x >= canvas.width) {
+        if (this.x + this.size >= canvas.width) {
             // player1 scores
-        } else if (this.x <= 0) {
+            player1.score += 1;
+            // restart ball
+            this.x = canvas.width/2;
+            this.y = canvas.height/2;
+        } else if (this.x - this.size <= 0) {
             // player2 scores
+            player2.score += 1;
+            // restart ball
+            this.x = canvas.width/2;
+            this.y = canvas.height/2;
         }
     }
 };
 
-//** object instances */
+/* object instances */
 let player1;
 let player2;
 let ball1;
 
-//** functions */
+/* functions */
 const random = (min, max) => {
     const num = Math.floor(Math.random() * (max - min + 1)) + min;
     return num;
@@ -115,18 +157,18 @@ const startGame = () => {
 
     // define paddles and balls
     player1 = new Player(
-        50, 
+        40, 
         canvas.height/2 - 40,
-        15,
+        20,
         100,
         15,
         15
     );
 
     player2 = new Player(
-        canvas.width - 50,
+        canvas.width - 40,
         canvas.height/2 - 40,
-        15,
+        20,
         100,
         15,
         15
@@ -135,13 +177,24 @@ const startGame = () => {
     ball1 = new Ball(
         canvas.width/2,
         canvas.height/2,
-        5,
-        5,
-        10
+        7,
+        7,
+        12
     );
-
     // start animation loop
     loop();
+}
+
+const updateScoreboard = () => {
+    // show scoreboard
+    const fontSize = canvas.height * 0.30;
+    ctx.globalAlpha = 0.5;
+    ctx.font = "bold " + fontSize + "px arial";
+    ctx.fillStyle = "rgb(175, 238, 238)";
+    ctx.textAlign = "center";
+    ctx.fillText(player1.score, canvas.width/4, canvas.height/2 + fontSize/4);
+    ctx.fillText(player2.score, canvas.width/4*3, canvas.height/2 + fontSize/4);
+    ctx.globalAlpha = 1.0;
 }
 
 const movePlayers = () => {
@@ -183,6 +236,7 @@ const loop = () => {
     ctx.fillStyle = 'rgb(0, 0, 0)';
     ctx.fillRect(0,0,window.innerWidth,window.innerHeight);
 
+    updateScoreboard();
     player1.draw();
     player2.draw();
     ball1.draw();
@@ -191,9 +245,10 @@ const loop = () => {
     ball1.update();
 
     ball1.collisionDetect();
+    ball1.scoreDetect();
 
     requestAnimationFrame(loop);
 }
 
-//** Add event listeners */ 
+/* Add event listeners */ 
 document.addEventListener('keypress', startGame);
