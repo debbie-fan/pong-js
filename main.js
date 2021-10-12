@@ -1,13 +1,22 @@
 /* setup canvas */ 
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
+const menuPage = document.getElementById("menu-page");
+const endPage = document.getElementById("end-page");
+const btnStart = document.getElementById("btn-start");
+const btnEnd = document.getElementById("btn-end");
+const maxScore = 5;
+
+let reqAnim;
+let net = [];
+
 
 /* global variables */ 
 let keys = [];
 
 /* objects */ 
 class Player {
-    constructor(x, y, w, h, velX, velY) {
+    constructor(x, y, w, h, velX, velY, name) {
         this.x = x;
         this.y = y;
         this.w = w;
@@ -15,6 +24,7 @@ class Player {
         this.velX = velX;
         this.velY = velY;
         this.score = 0;
+        this.name = name;
     }
 
     draw() {
@@ -72,40 +82,40 @@ class Ball {
         const p2BotY = player2.y + player2.h;
 
         if (ballLeftX <= p1RightX && ballBotY <= p1BotY && ballTopY >= p1TopY && ballLeftX > p1LeftX) {
-            console.log('hit p1');
+            // ball hits p1
             if (this.velX < 0) {
                 this.velX = -(this.velX);
             }
         } 
         if (ballRightX >= p2LeftX && ballBotY <= p2BotY && ballTopY >= p2TopY && ballRightX < p2RightX) {
-            console.log('hit p2');
+            // ball hits p2
             if (this.velX > 0) {
                 this.velX = -(this.velX);
             }
         } 
         if (ballBotY >= p1TopY && ballX <= p1RightX && ballX >= p1LeftX && ballTopY < p1TopY) {
-            console.log('hit p1 top');
+            // ball hits p1 top
             if (this.velY > 0) {
                 this.velY = -(this.velY);
                 this.velX = -(this.velX);
             }
         } 
         if (ballTopY <= p1BotY && ballX <= p1RightX && ballX >= p1LeftX && ballBotY > p1BotY) {
-            console.log('hit p1 bot');
+            // ball hits p1 bot
             if (this.velY < 0) {
                 this.velY = -(this.velY);
                 this.velX = -(this.velX);
             }
         }
         if (ballBotY >= p2TopY && ballX <= p2RightX && ballX >= p2LeftX && ballTopY < p2TopY) {
-            console.log('hit p2 top');
+            // ball hits p2 top
             if (this.velY > 0) {
                 this.velY = -(this.velY);
                 this.velX = -(this.velX);
             }
         }
         if (ballTopY <= p2BotY && ballX <= p2RightX && ballX >= p2LeftX && ballBotY > p2BotY) {
-            console.log('hit p2 bot');
+            // ball hits p2 bot
             if (this.velY < 0) {
                 this.velY = -(this.velY);
                 this.velX = -(this.velX);
@@ -144,16 +154,14 @@ const random = (min, max) => {
 const startGame = () => {
 
     // hide menu page
-    const menuPage = document.getElementById("menu-page");
     if (menuPage.style.display !== "none") {
         menuPage.style.display = "none";
-        // remove event listener
-        document.removeEventListener('keypress', startGame);
     } 
     
     // set up canvas size
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    canvas.style.cursor = "none";
 
     // define paddles and balls
     player1 = new Player(
@@ -162,7 +170,8 @@ const startGame = () => {
         20,
         100,
         15,
-        15
+        15,
+        'Player 1'
     );
 
     player2 = new Player(
@@ -171,7 +180,8 @@ const startGame = () => {
         20,
         100,
         15,
-        15
+        15,
+        'Player 2'
     );
 
     ball1 = new Ball(
@@ -181,6 +191,20 @@ const startGame = () => {
         7,
         12
     );
+
+    let numBalls = Math.floor((canvas.height/12)/2);
+    console.log(numBalls);
+    for (let i = 0; i < numBalls; i++) {
+        let ball = new Ball(
+            canvas.width / 2,
+            (i * 4) * 12,
+            0,
+            0,
+            12
+        )
+        net.push(ball);
+    }
+
     // start animation loop
     loop();
 }
@@ -237,9 +261,24 @@ const loop = () => {
     ctx.fillRect(0,0,window.innerWidth,window.innerHeight);
 
     updateScoreboard();
+
+    // check if game is over
+    if (player1.score === maxScore || player2.score === maxScore) {
+        stopLoop();
+        if (player1.score === maxScore) {
+            endGame(player1.name);
+        } else {
+            endGame(player2.name);
+        }
+        return;
+    }
+
     player1.draw();
     player2.draw();
     ball1.draw();
+    for (let i = 0; i < net.length; i++) {
+        net[i].draw();
+    }
 
     movePlayers();
     ball1.update();
@@ -247,8 +286,23 @@ const loop = () => {
     ball1.collisionDetect();
     ball1.scoreDetect();
 
-    requestAnimationFrame(loop);
+    reqAnim = window.requestAnimationFrame(loop);
 }
 
-/* Add event listeners */ 
-document.addEventListener('keypress', startGame);
+const stopLoop = () => {
+    window.cancelAnimationFrame(reqAnim);
+}
+
+const endGame = (winner) => {
+    ctx.fillStyle = 'rgb(0, 0, 0, 0.80)';
+    ctx.fillRect(0,0,window.innerWidth,window.innerHeight);
+    canvas.style.cursor = "auto";
+    endPage.style.display = "block";
+}
+
+const restartGame = () => {
+    endPage.style.display = "none";
+    player1.score = 0;
+    player2.score = 0;
+    startGame();
+}

@@ -12,11 +12,18 @@
   </head>
 
   <body>
-    <canvas></canvas>
+    <canvas class="game-canvas" id="game-canvas"></canvas>
 
     <div class="menu-page" id="menu-page">
       <h1>PONG</h1>
-      <P>PRESS ANY KEY TO START</P>
+      <button onclick="startGame()" type="button" class="btn-start" id="btn-start">START GAME</p>
+    </div>
+
+    <div class="end-page" id="end-page">
+      <h1>GAME OVER</h1>
+      <div class="button-div" id="button-div">
+        <button onclick="restartGame()" type="button" class="btn-replay" id="btn-replay">PLAY AGAIN</button>
+      </div>
     </div>
 
     <script src="main.js"></script>
