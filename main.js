@@ -3,12 +3,16 @@ const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
 const menuPage = document.getElementById("menu-page");
 const endPage = document.getElementById("end-page");
+const ctrlsPage = document.getElementById("ctrls-page");
 const btnStart = document.getElementById("btn-start");
 const btnEnd = document.getElementById("btn-end");
 const maxScore = 5;
 
 let reqAnim;
 let net = [];
+let numPlayers = 2;
+let p2VelX = 15;
+let p2VelY = 15;
 
 
 /* global variables */ 
@@ -135,7 +139,7 @@ class Ball {
             player2.score += 1;
             // restart ball
             this.x = canvas.width/2;
-            this.y = canvas.height/2;
+            this.y = Math.random()*canvas.height;
         }
     }
 };
@@ -151,13 +155,30 @@ const random = (min, max) => {
     return num;
 }
 
-const startGame = () => {
-
+const showCtrls = () => {
     // hide menu page
     if (menuPage.style.display !== "none") {
         menuPage.style.display = "none";
     } 
-    
+
+    ctrlsPage.style.display = "block";
+}
+
+const needAI = () => {
+    console.log("AI is deployed!")
+    numPlayers = 1;
+    p2VelX = 9.75; 
+    p2VelY = 9.75;
+    startGame();
+}
+
+const startGame = () => {
+    // hide menu page and ctrls page
+    if (menuPage.style.display !== "none") {
+        menuPage.style.display = "none";
+    } 
+    ctrlsPage.style.display = "none";
+
     // set up canvas size
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -179,19 +200,20 @@ const startGame = () => {
         canvas.height/2 - 40,
         20,
         100,
-        15,
-        15,
+        p2VelX,
+        p2VelY,
         'Player 2'
     );
 
     ball1 = new Ball(
         canvas.width/2,
         canvas.height/2,
-        7,
-        7,
+        10,
+        10,
         12
     );
 
+    // Create the net
     let numBalls = Math.floor((canvas.height/12)/2);
     console.log(numBalls);
     for (let i = 0; i < numBalls; i++) {
@@ -226,32 +248,55 @@ const movePlayers = () => {
     window.onkeydown = window.onkeyup = (e) => {
         keys[e.keyCode] = e.type == 'keydown';
     }
-    if (keys[38]) {
+    // down key for player 1
+    if (keys[87]) {
         if (player1.y <= 0) {
             player1.y = 0;
         } else {
             player1.y -= player1.velY;
         }
     }
-    if (keys[40]) {
+    // up key for player 1
+    if (keys[83]) {
         if (player1.y >= canvas.height - player1.h) {
             player1.y = canvas.height - player1.h;
         } else {
             player1.y += player1.velY;
         }
     }
-    if (keys[87]) {
-        if (player2.y <=0) {
-            player2.y = 0;
-        } else {
-            player2.y -= player2.velY;
+    if (numPlayers === 2) {
+        // down key for player 2
+        if (keys[38]) {
+            if (player2.y <=0) {
+                player2.y = 0;
+            } else {
+                player2.y -= player2.velY;
+            }
         }
-    }
-    if (keys[83]) {
-        if (player2.y >= canvas.height - player2.h) {
-            player2.y = canvas.height - player2.h;
-        } else {
-            player2.y += player2.velY;
+        // up key for player 2
+        if (keys[40]) {
+            if (player2.y >= canvas.height - player2.h) {
+                player2.y = canvas.height - player2.h;
+            } else {
+                player2.y += player2.velY;
+            }
+        }
+    } else if(numPlayers === 1) {
+        // AI moves down if ball is below AI
+        if(ball1.y <= player2.y + player2.h/2) {
+                if (player2.y <=0) {
+                    player2.y = 0;
+                } else {
+                    player2.y -= player2.velY;
+                }
+        } 
+        // AI moves up if ball is above AI
+        if (ball1.y >= player2.y + player2.h/2) {
+                if (player2.y >= canvas.height - player2.h) {
+                    player2.y = canvas.height - player2.h;
+                } else {
+                    player2.y += player2.velY;
+                }
         }
     }
 }
@@ -285,7 +330,7 @@ const loop = () => {
 
     ball1.collisionDetect();
     ball1.scoreDetect();
-
+    
     reqAnim = window.requestAnimationFrame(loop);
 }
 
@@ -302,7 +347,10 @@ const endGame = (winner) => {
 
 const restartGame = () => {
     endPage.style.display = "none";
+    p2VelX = 15;
+    p2VelY = 15;
     player1.score = 0;
     player2.score = 0;
-    startGame();
+    numPlayers = 2;
+    showCtrls();
 }

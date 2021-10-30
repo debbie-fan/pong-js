@@ -16,7 +16,17 @@
 
     <div class="menu-page" id="menu-page">
       <h1>PONG</h1>
-      <button onclick="startGame()" type="button" class="btn-start" id="btn-start">START GAME</p>
+      <button onclick="showCtrls()" type="button" class="btn-start" id="btn-start">START GAME</p>
+    </div>
+
+    <div class="ctrls-page" id="ctrls-page">
+      <h1>CONTROLS</h1>
+      <P>Player 1 controls: WASD keys</P>
+      <p>Player 2 controls: Arrow keys</p>
+      <p>Game ends when a player gets 5 pts</p>
+      <hr>
+      <button onclick="needAI()" type="button" class="btn-1-player" id="btn-1-player">1 PLAYER</button>
+      <button onclick="startGame()" type="button" class="btn-2-players" id="btn-2-players">2 PLAYERS</button>
     </div>
 
     <div class="end-page" id="end-page">
